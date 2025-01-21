@@ -3,8 +3,23 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+const getPriorityColor = (priority: string) => {
+  switch (priority) {
+    case 'urgent':
+      return 'bg-red-100 text-red-700';
+    case 'high':
+      return 'bg-orange-100 text-orange-700';
+    case 'medium':
+      return 'bg-yellow-100 text-yellow-700';
+    case 'low':
+      return 'bg-green-100 text-green-700';
+    default:
+      return 'bg-gray-100 text-gray-700';
+  }
+};
 
 const TicketDetails = () => {
   const { id } = useParams();
@@ -71,7 +86,7 @@ const TicketDetails = () => {
                 <span className="text-sm px-2 py-1 rounded-full bg-primary/10 text-primary">
                   {ticket.status}
                 </span>
-                <span className="text-sm px-2 py-1 rounded-full bg-secondary/10 text-secondary">
+                <span className={`text-sm px-3 py-1 rounded-full font-medium capitalize ${getPriorityColor(ticket.priority)}`}>
                   {ticket.priority}
                 </span>
               </div>
@@ -97,6 +112,13 @@ const TicketDetails = () => {
                 </p>
               </div>
             </div>
+
+            {ticket.priority === 'urgent' && (
+              <div className="flex items-center gap-2 p-4 bg-red-50 text-red-700 rounded-lg">
+                <AlertCircle className="h-5 w-5" />
+                <p className="text-sm font-medium">This ticket requires immediate attention</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
