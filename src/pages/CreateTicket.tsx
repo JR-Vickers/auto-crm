@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +15,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 const ticketSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
+  priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium'),
 });
 
 type TicketFormValues = z.infer<typeof ticketSchema>;
@@ -27,6 +29,7 @@ const CreateTicket = () => {
     defaultValues: {
       title: "",
       description: "",
+      priority: "medium",
     },
   });
 
@@ -44,6 +47,7 @@ const CreateTicket = () => {
           {
             title: values.title,
             description: values.description,
+            priority: values.priority,
             customer_id: session.user.id,
           },
         ]);
@@ -111,6 +115,30 @@ const CreateTicket = () => {
                           {...field}
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="priority"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Priority</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select priority" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="low">Low</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="urgent">Urgent</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
