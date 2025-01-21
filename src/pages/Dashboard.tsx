@@ -7,6 +7,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
 
+const getPriorityColor = (priority: string) => {
+  switch (priority) {
+    case 'urgent':
+      return 'bg-red-100 text-red-700';
+    case 'high':
+      return 'bg-orange-100 text-orange-700';
+    case 'medium':
+      return 'bg-yellow-100 text-yellow-700';
+    case 'low':
+      return 'bg-green-100 text-green-700';
+    default:
+      return 'bg-gray-100 text-gray-700';
+  }
+};
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -115,7 +130,7 @@ const Dashboard = () => {
                       <span className="text-sm px-2 py-1 rounded-full bg-primary/10 text-primary">
                         {ticket.status}
                       </span>
-                      <span className="text-sm px-2 py-1 rounded-full bg-secondary/10 text-secondary">
+                      <span className={`text-sm px-2 py-1 rounded-full capitalize ${getPriorityColor(ticket.priority)}`}>
                         {ticket.priority}
                       </span>
                     </div>
