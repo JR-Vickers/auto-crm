@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2 } from "lucide-react";
+import { User } from "@supabase/supabase-js";
 
 type Profile = {
   id: string;
@@ -52,16 +53,16 @@ const Admin = () => {
       if (profilesError) throw profilesError;
 
       // Fetch emails from auth.users through the profiles
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers();
       
       if (authError) throw authError;
 
-      const usersWithEmail = profiles.map(profile => ({
+      const usersWithEmail = profiles?.map(profile => ({
         ...profile,
-        email: authUsers.users.find(user => user.id === profile.id)?.email || 'N/A'
+        email: authUsers?.find((user: User) => user.id === profile.id)?.email || 'N/A'
       }));
 
-      setUsers(usersWithEmail);
+      setUsers(usersWithEmail || []);
     } catch (error: any) {
       toast({
         title: "Error",
