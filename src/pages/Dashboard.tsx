@@ -1,57 +1,35 @@
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
-import { Tables } from "@/integrations/supabase/types";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Loader2, Plus, Settings } from "lucide-react";
+import type { Database } from "@/integrations/supabase/types";
 
-const getPriorityColor = (priority: string) => {
-  switch (priority) {
-    case 'urgent':
-      return 'bg-red-100 text-red-700';
-    case 'high':
-      return 'bg-orange-100 text-orange-700';
-    case 'medium':
-      return 'bg-yellow-100 text-yellow-700';
-    case 'low':
-      return 'bg-green-100 text-green-700';
-    default:
-      return 'bg-gray-100 text-gray-700';
-  }
-};
+type Ticket = Database["public"]["Tables"]["tickets"]["Row"];
 
-const Dashboard = () => {
+export default function Dashboard() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [tickets, setTickets] = useState<Tables<'tickets'>[]>([]);
+  const { isAdmin, isCustomer, hasWorkerAccess, loading: authLoading } = useAuth();
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
-  const { role, loading: roleLoading, isCustomer, hasWorkerAccess } = useAuth();
 
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate('/auth');
-      } else {
-        fetchTickets();
-      }
-    };
-
-    checkSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
-        navigate('/auth');
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [navigate]);
+    if (!authLoading) {
+      fetchTickets();
+    }
+  }, [authLoading]);
 
   const fetchTickets = async () => {
     try {
@@ -60,47 +38,79 @@ const Dashboard = () => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      // If user is a customer, only fetch their tickets
+      // If user is a customer, only show their tickets
       if (isCustomer) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          query = query.eq('customer_id', user.id);
-        }
+        query = query.eq('customer_id', (await supabase.auth.getUser()).data.user?.id);
       }
 
       const { data, error } = await query;
 
       if (error) throw error;
+
       setTickets(data || []);
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+  const handleAssignTicket = async (ticketId: string) => {
+    try {
+      const { error } = await supabase
+        .from('tickets')
+        .update({ 
+          assigned_to: (await supabase.auth.getUser()).data.user?.id,
+          status: 'in_progress'
+        })
+        .eq('id', ticketId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Ticket assigned successfully",
+      });
+
+      fetchTickets();
+    } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive"
+        variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Success",
-        description: "Successfully signed out!",
-      });
-      navigate('/auth');
     }
   };
 
-  if (loading || roleLoading) {
+  const handleUpdateStatus = async (ticketId: string, status: Database["public"]["Enums"]["ticket_status"]) => {
+    try {
+      const { error } = await supabase
+        .from('tickets')
+        .update({ status })
+        .eq('id', ticketId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Ticket status updated successfully",
+      });
+
+      fetchTickets();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (authLoading || loading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -115,65 +125,72 @@ const Dashboard = () => {
           <div>
             <h1 className="text-3xl font-bold">Dashboard</h1>
             <p className="text-muted-foreground">
-              Logged in as: {role?.charAt(0).toUpperCase() + role?.slice(1)}
+              {isCustomer ? "Manage your support tickets" : "Manage customer support tickets"}
             </p>
           </div>
-          <div className="space-x-4">
+          <div className="flex gap-4">
             {isCustomer && (
-              <Button onClick={() => navigate('/tickets/new')}>Create Ticket</Button>
+              <Button onClick={() => navigate('/tickets/new')}>
+                <Plus className="h-4 w-4 mr-2" />
+                New Ticket
+              </Button>
             )}
-            {hasWorkerAccess && (
-              <Button variant="outline" onClick={() => navigate('/admin')}>Admin Panel</Button>
+            {isAdmin && (
+              <Button variant="outline" onClick={() => navigate('/admin')}>
+                <Settings className="h-4 w-4 mr-2" />
+                Admin Panel
+              </Button>
             )}
-            <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
           </div>
         </div>
 
-        {tickets.length === 0 ? (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center h-64">
-              <p className="text-muted-foreground mb-4">No tickets found</p>
-              {isCustomer && (
-                <Button onClick={() => navigate('/tickets/new')}>Create Your First Ticket</Button>
-              )}
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4">
-            {tickets.map((ticket) => (
-              <Card 
-                key={ticket.id} 
-                className="cursor-pointer hover:bg-accent/50" 
-                onClick={() => navigate(`/tickets/${ticket.id}`)}
-              >
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle>{ticket.title}</CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {new Date(ticket.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm px-2 py-1 rounded-full bg-primary/10 text-primary">
-                        {ticket.status}
-                      </span>
-                      <span className={`text-sm px-2 py-1 rounded-full capitalize ${getPriorityColor(ticket.priority)}`}>
-                        {ticket.priority}
-                      </span>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground line-clamp-2">{ticket.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tickets</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Priority</TableHead>
+                  {hasWorkerAccess && <TableHead>Actions</TableHead>}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {tickets.map((ticket) => (
+                  <TableRow key={ticket.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/tickets/${ticket.id}`)}>
+                    <TableCell>{ticket.title}</TableCell>
+                    <TableCell className="capitalize">{ticket.status.replace(/_/g, ' ')}</TableCell>
+                    <TableCell className="capitalize">{ticket.priority}</TableCell>
+                    {hasWorkerAccess && (
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <div className="flex gap-2">
+                          {!ticket.assigned_to && (
+                            <Button size="sm" onClick={() => handleAssignTicket(ticket.id)}>
+                              Assign to me
+                            </Button>
+                          )}
+                          {ticket.status !== 'closed' && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleUpdateStatus(ticket.id, 'closed')}
+                            >
+                              Close
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
-};
-
-export default Dashboard;
+}
