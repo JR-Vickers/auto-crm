@@ -14,7 +14,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2 } from "lucide-react";
-import { User } from "@supabase/supabase-js";
 
 type Profile = {
   id: string;
@@ -45,24 +44,14 @@ const Admin = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data: profiles, error: profilesError } = await supabase
+      const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (profilesError) throw profilesError;
+      if (error) throw error;
 
-      // Fetch emails from auth.users through the profiles
-      const { data: { users: authUsers }, error: authError } = await supabase.auth.admin.listUsers();
-      
-      if (authError) throw authError;
-
-      const usersWithEmail = profiles?.map(profile => ({
-        ...profile,
-        email: authUsers?.find((user: User) => user.id === profile.id)?.email || 'N/A'
-      }));
-
-      setUsers(usersWithEmail || []);
+      setUsers(profiles || []);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -130,7 +119,6 @@ const Admin = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
                   <TableHead>Current Role</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -139,7 +127,6 @@ const Admin = () => {
                 {users.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>{user.full_name || 'N/A'}</TableCell>
-                    <TableCell>{user.email}</TableCell>
                     <TableCell className="capitalize">{user.role}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
