@@ -1,42 +1,49 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
+import { useNavigate } from "react-router-dom";
 
 type UserRole = Database["public"]["Enums"]["user_role"];
 
 export function useAuth() {
   const [role, setRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch the user's role when the component mounts
-    fetchUserRole();
+    // Check current session when component mounts
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        setRole(null);
+        setLoading(false);
+        navigate('/auth');
+        return;
+      }
+      fetchUserRole(session.user.id);
+    });
 
     // Subscribe to auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      fetchUserRole();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') {
+        setRole(null);
+        navigate('/auth');
+      } else if (event === 'SIGNED_IN' && session) {
+        await fetchUserRole(session.user.id);
+      }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
-  async function fetchUserRole() {
+  async function fetchUserRole(userId: string) {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        setRole(null);
-        setLoading(false);
-        return;
-      }
-
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('role')
-        .eq('id', session.user.id)
-        .single();
+        .eq('id', userId)
+        .maybeSingle();
 
       if (error) throw error;
       
