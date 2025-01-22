@@ -32,54 +32,61 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
+    try {
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: 'customer', // Default role for new signups
+          },
         },
-      },
-    });
+      });
 
-    if (error) {
+      if (signUpError) throw signUpError;
+
+      toast({
+        title: "Success",
+        description: "Please check your email to confirm your account.",
+      });
+    } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Success",
-        description: "Please check your email to confirm your account.",
-      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-    } else {
+
+      if (error) throw error;
+
       toast({
         title: "Success",
         description: "Successfully signed in!",
       });
       navigate("/dashboard");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -164,7 +171,7 @@ const Auth = () => {
                   />
                 </div>
                 <Button className="w-full" type="submit" disabled={loading}>
-                  {loading ? "Signing up..." : "Sign Up"}
+                  {loading ? "Signing up..." : "Sign Up as Customer"}
                 </Button>
               </CardContent>
             </form>

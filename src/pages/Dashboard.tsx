@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { Tables } from "@/integrations/supabase/types";
+import { useAuth } from "@/hooks/useAuth";
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
@@ -27,12 +28,13 @@ const Dashboard = () => {
   const { toast } = useToast();
   const [tickets, setTickets] = useState<Tables<'tickets'>[]>([]);
   const [loading, setLoading] = useState(true);
+  const { role, loading: roleLoading, isCustomer, hasWorkerAccess } = useAuth();
 
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        navigate('/');
+        navigate('/auth');
       } else {
         fetchTickets();
       }
@@ -42,7 +44,7 @@ const Dashboard = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT' || !session) {
-        navigate('/');
+        navigate('/auth');
       }
     });
 
@@ -53,10 +55,20 @@ const Dashboard = () => {
 
   const fetchTickets = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('tickets')
         .select('*')
         .order('created_at', { ascending: false });
+
+      // If user is a customer, only fetch their tickets
+      if (isCustomer) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          query = query.eq('customer_id', user.id);
+        }
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setTickets(data || []);
@@ -84,40 +96,56 @@ const Dashboard = () => {
         title: "Success",
         description: "Successfully signed out!",
       });
-      navigate('/');
+      navigate('/auth');
     }
   };
 
-  const handleCreateTicket = () => {
-    navigate('/tickets/new');
-  };
+  if (loading || roleLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <div>
+            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <p className="text-muted-foreground">
+              Logged in as: {role?.charAt(0).toUpperCase() + role?.slice(1)}
+            </p>
+          </div>
           <div className="space-x-4">
-            <Button onClick={handleCreateTicket}>Create Ticket</Button>
+            {isCustomer && (
+              <Button onClick={() => navigate('/tickets/new')}>Create Ticket</Button>
+            )}
+            {hasWorkerAccess && (
+              <Button variant="outline" onClick={() => navigate('/admin')}>Admin Panel</Button>
+            )}
             <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
           </div>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-        ) : tickets.length === 0 ? (
+        {tickets.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center h-64">
               <p className="text-muted-foreground mb-4">No tickets found</p>
-              <Button onClick={handleCreateTicket}>Create Your First Ticket</Button>
+              {isCustomer && (
+                <Button onClick={() => navigate('/tickets/new')}>Create Your First Ticket</Button>
+              )}
             </CardContent>
           </Card>
         ) : (
           <div className="grid gap-4">
             {tickets.map((ticket) => (
-              <Card key={ticket.id} className="cursor-pointer hover:bg-accent/50" onClick={() => navigate(`/tickets/${ticket.id}`)}>
+              <Card 
+                key={ticket.id} 
+                className="cursor-pointer hover:bg-accent/50" 
+                onClick={() => navigate(`/tickets/${ticket.id}`)}
+              >
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div>
