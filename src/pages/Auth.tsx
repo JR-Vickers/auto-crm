@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
@@ -47,8 +47,8 @@ const Auth = () => {
       if (signUpError) throw signUpError;
 
       toast({
-        title: "Success",
-        description: "Please check your email to confirm your account.",
+        title: "Account Created",
+        description: "Welcome! You've been registered as a customer. Please check your email to confirm your account.",
       });
     } catch (error: any) {
       toast({
@@ -73,9 +73,17 @@ const Auth = () => {
 
       if (error) throw error;
 
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+
+      if (profileError) throw profileError;
+
       toast({
-        title: "Success",
-        description: "Successfully signed in!",
+        title: "Welcome back!",
+        description: `Signed in successfully as ${profile?.role}`,
       });
       navigate("/dashboard");
     } catch (error: any) {
@@ -95,7 +103,7 @@ const Auth = () => {
         <CardHeader>
           <CardTitle>Welcome to Support Desk</CardTitle>
           <CardDescription>
-            Sign in to your account or create a new one
+            Sign in to your account or create a new customer account
           </CardDescription>
         </CardHeader>
         <Tabs defaultValue={defaultTab} className="w-full">
@@ -170,8 +178,11 @@ const Auth = () => {
                     required
                   />
                 </div>
+                <div className="text-sm text-muted-foreground">
+                  By signing up, you'll create a customer account with access to submit and manage support tickets.
+                </div>
                 <Button className="w-full" type="submit" disabled={loading}>
-                  {loading ? "Signing up..." : "Sign Up as Customer"}
+                  {loading ? "Creating account..." : "Create Customer Account"}
                 </Button>
               </CardContent>
             </form>
