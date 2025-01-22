@@ -15,8 +15,16 @@ import {
 } from "@/components/ui/table";
 import { Loader2, Plus, Settings } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { format } from "date-fns";
 
-type Ticket = Database["public"]["Tables"]["tickets"]["Row"];
+type Ticket = Database["public"]["Tables"]["tickets"]["Row"] & {
+  assigned_worker?: {
+    full_name: string | null;
+  };
+  customer?: {
+    full_name: string | null;
+  };
+};
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -35,10 +43,13 @@ export default function Dashboard() {
     try {
       let query = supabase
         .from('tickets')
-        .select('*')
+        .select(`
+          *,
+          assigned_worker:profiles!tickets_assigned_to_fkey(full_name),
+          customer:profiles!tickets_customer_id_fkey(full_name)
+        `)
         .order('created_at', { ascending: false });
 
-      // If user is a customer, only show their tickets
       if (isCustomer) {
         query = query.eq('customer_id', (await supabase.auth.getUser()).data.user?.id);
       }
@@ -118,6 +129,19 @@ export default function Dashboard() {
     );
   }
 
+  const getPriorityClass = (priority: Database["public"]["Enums"]["ticket_priority"]) => {
+    switch (priority) {
+      case 'urgent':
+        return 'text-red-600 font-semibold';
+      case 'high':
+        return 'text-orange-600';
+      case 'medium':
+        return 'text-yellow-600';
+      default:
+        return 'text-green-600';
+    }
+  };
+
   return (
     <div className="min-h-screen p-8">
       <div className="max-w-7xl mx-auto">
@@ -153,8 +177,12 @@ export default function Dashboard() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Title</TableHead>
+                  <TableHead>Customer</TableHead>
+                  <TableHead>Assigned To</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Priority</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead>Last Updated</TableHead>
                   {hasWorkerAccess && <TableHead>Actions</TableHead>}
                 </TableRow>
               </TableHeader>
@@ -162,8 +190,14 @@ export default function Dashboard() {
                 {tickets.map((ticket) => (
                   <TableRow key={ticket.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/tickets/${ticket.id}`)}>
                     <TableCell>{ticket.title}</TableCell>
+                    <TableCell>{ticket.customer?.full_name || 'Unknown'}</TableCell>
+                    <TableCell>{ticket.assigned_worker?.full_name || 'Unassigned'}</TableCell>
                     <TableCell className="capitalize">{ticket.status.replace(/_/g, ' ')}</TableCell>
-                    <TableCell className="capitalize">{ticket.priority}</TableCell>
+                    <TableCell className={getPriorityClass(ticket.priority)}>
+                      {ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}
+                    </TableCell>
+                    <TableCell>{format(new Date(ticket.created_at), 'MMM d, yyyy')}</TableCell>
+                    <TableCell>{format(new Date(ticket.updated_at), 'MMM d, yyyy')}</TableCell>
                     {hasWorkerAccess && (
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <div className="flex gap-2">
