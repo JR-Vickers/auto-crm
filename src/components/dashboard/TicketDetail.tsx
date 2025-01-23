@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RichTextEditor } from "@/components/editor/RichTextEditor";
 import { SLAStatus, getPriorityClass } from "./SLAStatus";
 import { QuickResponseTemplates } from "./QuickResponseTemplates";
+import { FileAttachments } from "./FileAttachments";
 import type { Database } from "@/integrations/supabase/types";
 
 type Ticket = Database["public"]["Tables"]["tickets"]["Row"] & {
@@ -33,13 +34,29 @@ interface Template {
   content: string;
 }
 
+interface Attachment {
+  id: string;
+  filename: string;
+  content_type: string;
+  size_bytes: number;
+  is_internal: boolean;
+  created_at: string;
+  user: {
+    full_name: string | null;
+  };
+}
+
 interface TicketDetailProps {
   ticket: Ticket;
   comments: Comment[];
+  attachments: Attachment[];
   hasWorkerAccess: boolean;
   onAssign: (ticketId: string) => void;
   onUpdateStatus: (ticketId: string, status: Database["public"]["Enums"]["ticket_status"]) => void;
   onAddComment: (content: string, isInternal: boolean) => void;
+  onUploadAttachment: (files: FileList, isInternal: boolean) => Promise<void>;
+  onDeleteAttachment: (attachmentId: string) => Promise<void>;
+  onDownloadAttachment: (attachment: Attachment) => Promise<void>;
   templates: Template[];
   onSaveTemplate: (template: Omit<Template, "id">) => void;
   onDeleteTemplate: (id: string) => void;
@@ -48,10 +65,14 @@ interface TicketDetailProps {
 export function TicketDetail({ 
   ticket, 
   comments,
+  attachments,
   hasWorkerAccess,
   onAssign,
   onUpdateStatus,
   onAddComment,
+  onUploadAttachment,
+  onDeleteAttachment,
+  onDownloadAttachment,
   templates,
   onSaveTemplate,
   onDeleteTemplate
@@ -137,6 +158,15 @@ export function TicketDetail({
           <div dangerouslySetInnerHTML={{ __html: ticket.description }} />
         </CardContent>
       </Card>
+
+      {/* File Attachments */}
+      <FileAttachments
+        attachments={attachments}
+        hasWorkerAccess={hasWorkerAccess}
+        onUpload={onUploadAttachment}
+        onDelete={onDeleteAttachment}
+        onDownload={onDownloadAttachment}
+      />
 
       {/* Comments */}
       <div className="space-y-4">

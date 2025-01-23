@@ -35,6 +35,19 @@ interface Comment {
   is_internal: boolean;
 }
 
+interface Attachment {
+  id: string;
+  filename: string;
+  file_path: string;
+  content_type: string;
+  size_bytes: number;
+  is_internal: boolean;
+  created_at: string;
+  user: {
+    full_name: string | null;
+  };
+}
+
 export default function TicketDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -45,6 +58,7 @@ export default function TicketDetails() {
 
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -84,9 +98,26 @@ export default function TicketDetails() {
       )
       .subscribe();
 
+    const attachmentSubscription = supabase
+      .channel('attachment-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'attachments',
+          filter: `ticket_id=eq.${id}`,
+        },
+        () => {
+          fetchAttachments();
+        }
+      )
+      .subscribe();
+
     return () => {
       ticketSubscription.unsubscribe();
       commentSubscription.unsubscribe();
+      attachmentSubscription.unsubscribe();
     };
   }, [id]);
 
@@ -114,7 +145,7 @@ export default function TicketDetails() {
       };
 
       setTicket(ticket);
-      await fetchComments();
+      await Promise.all([fetchComments(), fetchAttachments()]);
     } catch (error: any) {
       toast({
         title: "Error loading ticket",
@@ -143,6 +174,52 @@ export default function TicketDetails() {
     } catch (error: any) {
       toast({
         title: "Error loading comments",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fetchAttachments = async () => {
+    try {
+      // First get attachments
+      const { data: attachments, error: attachmentsError } = await supabase
+        .from('attachments')
+        .select()
+        .eq('ticket_id', id)
+        .order('created_at', { ascending: true });
+
+      if (attachmentsError) throw attachmentsError;
+      if (!attachments) return;
+
+      // Then get user details for each attachment
+      const attachmentsWithUsers = await Promise.all(
+        attachments.map(async (attachment) => {
+          const { data: userData } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', attachment.user_id)
+            .single();
+
+          return {
+            id: attachment.id,
+            filename: attachment.filename,
+            file_path: attachment.file_path,
+            content_type: attachment.content_type,
+            size_bytes: attachment.size_bytes,
+            is_internal: attachment.is_internal,
+            created_at: attachment.created_at,
+            user: {
+              full_name: userData?.full_name || null
+            }
+          };
+        })
+      );
+
+      setAttachments(attachmentsWithUsers);
+    } catch (error: any) {
+      toast({
+        title: "Error loading attachments",
         description: error.message,
         variant: "destructive",
       });
@@ -219,6 +296,121 @@ export default function TicketDetails() {
     }
   };
 
+  const handleUploadAttachment = async (files: FileList, isInternal: boolean) => {
+    try {
+      for (const file of Array.from(files)) {
+        const filePath = `${id}/${crypto.randomUUID()}-${file.name}`;
+        
+        // Upload file to storage
+        const { error: uploadError } = await supabase.storage
+          .from('ticket-attachments')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        // Create attachment record
+        const { error: attachmentError } = await supabase
+          .from('attachments')
+          .insert({
+            ticket_id: id,
+            user_id: userId,
+            filename: file.name,
+            file_path: filePath,
+            content_type: file.type,
+            size_bytes: file.size,
+            is_internal: isInternal,
+          });
+
+        if (attachmentError) throw attachmentError;
+      }
+
+      toast({
+        title: "Success",
+        description: "Files uploaded successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error uploading files",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentId: string) => {
+    try {
+      // First fetch the attachment details including file_path
+      const { data: attachment, error: fetchError } = await supabase
+        .from('attachments')
+        .select(`
+          id,
+          file_path,
+          user_id
+        `)
+        .eq('id', attachmentId)
+        .single();
+
+      if (fetchError) throw fetchError;
+      if (!attachment) throw new Error('Attachment not found');
+
+      // Delete file from storage
+      const { error: storageError } = await supabase.storage
+        .from('ticket-attachments')
+        .remove([attachment.file_path]);
+
+      if (storageError) throw storageError;
+
+      // Delete attachment record
+      const { error: deleteError } = await supabase
+        .from('attachments')
+        .delete()
+        .eq('id', attachmentId);
+
+      if (deleteError) throw deleteError;
+
+      // Update local state
+      setAttachments(prev => prev.filter(a => a.id !== attachmentId));
+
+      toast({
+        title: "Success",
+        description: "Attachment deleted",
+      });
+    } catch (error: any) {
+      console.error('Delete error:', error);
+      toast({
+        title: "Error deleting attachment",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDownloadAttachment = async (attachment: Attachment) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('ticket-attachments')
+        .download(attachment.file_path);
+
+      if (error) throw error;
+
+      // Create download link
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = attachment.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error: any) {
+      toast({
+        title: "Error downloading file",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSaveTemplate = async (template: { title: string; content: string }) => {
     await saveTemplate({
       ...template,
@@ -239,10 +431,14 @@ export default function TicketDetails() {
       <TicketDetail
         ticket={ticket}
         comments={comments}
+        attachments={attachments}
         hasWorkerAccess={hasWorkerAccess}
         onAssign={handleAssign}
         onUpdateStatus={handleUpdateStatus}
         onAddComment={handleAddComment}
+        onUploadAttachment={handleUploadAttachment}
+        onDeleteAttachment={handleDeleteAttachment}
+        onDownloadAttachment={handleDownloadAttachment}
         templates={templates}
         onSaveTemplate={handleSaveTemplate}
         onDeleteTemplate={deleteTemplate}

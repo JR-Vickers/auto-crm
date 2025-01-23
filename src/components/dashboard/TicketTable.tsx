@@ -48,9 +48,10 @@ export function TicketTable({
         <TableRow>
           <TableHead className="w-[50px]">
             <Checkbox
-              checked={allSelected}
-              indeterminate={someSelected}
+              checked={allSelected || someSelected}
               onCheckedChange={(checked) => onSelectAll(!!checked)}
+              aria-label="Select all tickets"
+              data-state={someSelected ? "indeterminate" : allSelected ? "checked" : "unchecked"}
             />
           </TableHead>
           <TableHead>Title</TableHead>

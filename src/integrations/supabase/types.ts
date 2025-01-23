@@ -314,6 +314,57 @@ export type Database = {
           },
         ]
       }
+      attachments: {
+        Row: {
+          id: string
+          ticket_id: string
+          user_id: string
+          filename: string
+          file_path: string
+          content_type: string
+          size_bytes: number
+          is_internal: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          ticket_id: string
+          user_id: string
+          filename: string
+          file_path: string
+          content_type: string
+          size_bytes: number
+          is_internal?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          ticket_id?: string
+          user_id?: string
+          filename?: string
+          file_path?: string
+          content_type?: string
+          size_bytes?: number
+          is_internal?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attachments_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attachments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
