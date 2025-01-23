@@ -7,6 +7,7 @@ import { RichTextEditor } from "@/components/editor/RichTextEditor";
 import { SLAStatus, getPriorityClass } from "./SLAStatus";
 import { QuickResponseTemplates } from "./QuickResponseTemplates";
 import { FileAttachments } from "./FileAttachments";
+import { CustomerHistory } from "./CustomerHistory";
 import { EyeIcon, EyeOffIcon, LockIcon } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -164,6 +165,14 @@ export function TicketDetail({
           <div dangerouslySetInnerHTML={{ __html: ticket.description }} />
         </CardContent>
       </Card>
+
+      {/* Customer History */}
+      {hasWorkerAccess && ticket.customer_id && (
+        <CustomerHistory 
+          customerId={ticket.customer_id} 
+          currentTicketId={ticket.id} 
+        />
+      )}
 
       {/* File Attachments */}
       <FileAttachments
