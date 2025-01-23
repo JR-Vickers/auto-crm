@@ -35,7 +35,7 @@ interface Comment {
   is_internal: boolean;
 }
 
-export default function TicketDetails() {
+export function TicketDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -219,13 +219,6 @@ export default function TicketDetails() {
     }
   };
 
-  const handleSaveTemplate = async (template: { title: string; content: string }) => {
-    await saveTemplate({
-      ...template,
-      user_id: userId,
-    });
-  };
-
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -244,9 +237,9 @@ export default function TicketDetails() {
         onUpdateStatus={handleUpdateStatus}
         onAddComment={handleAddComment}
         templates={templates}
-        onSaveTemplate={handleSaveTemplate}
+        onSaveTemplate={saveTemplate}
         onDeleteTemplate={deleteTemplate}
       />
     </div>
   );
-}
+} 

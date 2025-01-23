@@ -5,6 +5,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import { TicketRow } from "./TicketRow";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -20,22 +21,38 @@ type Ticket = Database["public"]["Tables"]["tickets"]["Row"] & {
 interface TicketTableProps {
   tickets: Ticket[];
   hasWorkerAccess: boolean;
+  selectedTickets: string[];
   onAssignTicket: (ticketId: string) => void;
   onUpdateStatus: (ticketId: string, status: Database["public"]["Enums"]["ticket_status"]) => void;
   onRowClick: (ticketId: string) => void;
+  onSelectionChange: (ticketId: string, isSelected: boolean) => void;
+  onSelectAll: (isSelected: boolean) => void;
 }
 
 export function TicketTable({ 
   tickets, 
   hasWorkerAccess, 
+  selectedTickets,
   onAssignTicket, 
   onUpdateStatus, 
-  onRowClick 
+  onRowClick,
+  onSelectionChange,
+  onSelectAll
 }: TicketTableProps) {
+  const allSelected = tickets.length > 0 && selectedTickets.length === tickets.length;
+  const someSelected = selectedTickets.length > 0 && selectedTickets.length < tickets.length;
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead className="w-[50px]">
+            <Checkbox
+              checked={allSelected}
+              indeterminate={someSelected}
+              onCheckedChange={(checked) => onSelectAll(!!checked)}
+            />
+          </TableHead>
           <TableHead>Title</TableHead>
           <TableHead>Customer</TableHead>
           <TableHead>Assigned To</TableHead>
@@ -54,9 +71,11 @@ export function TicketTable({
             key={ticket.id}
             ticket={ticket}
             hasWorkerAccess={hasWorkerAccess}
+            isSelected={selectedTickets.includes(ticket.id)}
             onAssign={onAssignTicket}
             onUpdateStatus={onUpdateStatus}
             onRowClick={onRowClick}
+            onSelectionChange={onSelectionChange}
           />
         ))}
       </TableBody>

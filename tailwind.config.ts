@@ -89,8 +89,58 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
+			},
+			typography: {
+				DEFAULT: {
+					css: {
+						maxWidth: 'none',
+						color: 'hsl(var(--foreground))',
+						hr: {
+							borderColor: 'hsl(var(--border))',
+							marginTop: '2em',
+							marginBottom: '2em'
+						},
+						'h1, h2, h3, h4, h5, h6': {
+							color: 'hsl(var(--foreground))',
+							marginTop: '1.5em',
+							marginBottom: '0.5em'
+						},
+						a: {
+							color: 'hsl(var(--primary))',
+							textDecoration: 'underline',
+							'&:hover': {
+								color: 'hsl(var(--primary))',
+								textDecoration: 'none'
+							}
+						},
+						ul: {
+							listStyleType: 'disc',
+							marginTop: '0.5em',
+							marginBottom: '0.5em'
+						},
+						ol: {
+							listStyleType: 'decimal',
+							marginTop: '0.5em',
+							marginBottom: '0.5em'
+						},
+						'ul, ol': {
+							paddingLeft: '1.25em'
+						},
+						blockquote: {
+							borderLeftColor: 'hsl(var(--border))',
+							borderLeftWidth: '4px',
+							marginTop: '1.5em',
+							marginBottom: '1.5em',
+							paddingLeft: '1em',
+							fontStyle: 'italic'
+						}
+					}
+				}
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		require("tailwindcss-animate"),
+		require("@tailwindcss/typography")
+	],
 } satisfies Config;

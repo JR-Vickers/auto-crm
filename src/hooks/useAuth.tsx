@@ -7,6 +7,7 @@ type UserRole = Database["public"]["Enums"]["user_role"];
 
 export function useAuth() {
   const [role, setRole] = useState<UserRole | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -15,10 +16,12 @@ export function useAuth() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         setRole(null);
+        setUserId(null);
         setLoading(false);
         navigate('/auth');
         return;
       }
+      setUserId(session.user.id);
       fetchUserRole(session.user.id);
     });
 
@@ -26,8 +29,10 @@ export function useAuth() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT') {
         setRole(null);
+        setUserId(null);
         navigate('/auth');
       } else if (event === 'SIGNED_IN' && session) {
+        setUserId(session.user.id);
         await fetchUserRole(session.user.id);
       }
     });
@@ -66,6 +71,7 @@ export function useAuth() {
 
   return {
     role,
+    userId,
     loading,
     isCustomer,
     isWorker,

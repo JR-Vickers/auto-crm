@@ -1,5 +1,6 @@
 import { format, formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { SLAStatus, getPriorityClass } from "./SLAStatus";
 import type { Database } from "@/integrations/supabase/types";
@@ -16,24 +17,34 @@ type Ticket = Database["public"]["Tables"]["tickets"]["Row"] & {
 interface TicketRowProps {
   ticket: Ticket;
   hasWorkerAccess: boolean;
+  isSelected: boolean;
   onAssign: (ticketId: string) => void;
   onUpdateStatus: (ticketId: string, status: Database["public"]["Enums"]["ticket_status"]) => void;
   onRowClick: (ticketId: string) => void;
+  onSelectionChange: (ticketId: string, isSelected: boolean) => void;
 }
 
 export function TicketRow({ 
   ticket, 
   hasWorkerAccess, 
+  isSelected,
   onAssign, 
   onUpdateStatus, 
-  onRowClick 
+  onRowClick,
+  onSelectionChange
 }: TicketRowProps) {
   return (
     <TableRow 
       key={ticket.id} 
-      className="cursor-pointer hover:bg-muted/50" 
+      className={`cursor-pointer hover:bg-muted/50 ${isSelected ? 'bg-muted' : ''}`}
       onClick={() => onRowClick(ticket.id)}
     >
+      <TableCell onClick={(e) => e.stopPropagation()}>
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={(checked) => onSelectionChange(ticket.id, !!checked)}
+        />
+      </TableCell>
       <TableCell>{ticket.title}</TableCell>
       <TableCell>{ticket.customer?.full_name || 'Unknown'}</TableCell>
       <TableCell>{ticket.assigned_worker?.full_name || 'Unassigned'}</TableCell>

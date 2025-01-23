@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { RealtimeIndicator } from "./RealtimeIndicator";
 
 export function DashboardHeader() {
   const navigate = useNavigate();
@@ -27,8 +28,11 @@ export function DashboardHeader() {
   return (
     <div className="flex justify-between items-center mb-8">
       <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">
+        <div className="flex items-center gap-4">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <RealtimeIndicator />
+        </div>
+        <p className="text-muted-foreground mt-1">
           {isCustomer ? "Manage your support tickets" : "Manage customer support tickets"}
         </p>
       </div>
