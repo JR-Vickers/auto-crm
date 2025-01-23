@@ -60,7 +60,7 @@
   - ✅ Quick Filters
   - ✅ Bulk Operations
 - ✅ Ticket Handling
-  - [ ] Customer History
+  - ✅ Customer History
   - ✅ Rich Text Editing
   - ✅ Quick Responses
   - ✅ Collaboration Tools
