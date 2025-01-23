@@ -226,6 +226,7 @@ export type Database = {
           id: string
           metadata: Json | null
           priority: Database["public"]["Enums"]["ticket_priority"]
+          sla_deadline: string | null
           status: Database["public"]["Enums"]["ticket_status"]
           tags: string[] | null
           title: string
@@ -240,6 +241,7 @@ export type Database = {
           id?: string
           metadata?: Json | null
           priority?: Database["public"]["Enums"]["ticket_priority"]
+          sla_deadline?: string | null
           status?: Database["public"]["Enums"]["ticket_status"]
           tags?: string[] | null
           title: string
@@ -254,6 +256,7 @@ export type Database = {
           id?: string
           metadata?: Json | null
           priority?: Database["public"]["Enums"]["ticket_priority"]
+          sla_deadline?: string | null
           status?: Database["public"]["Enums"]["ticket_status"]
           tags?: string[] | null
           title?: string
@@ -294,6 +297,12 @@ export type Database = {
             }
             Returns: unknown
           }
+      calculate_sla_deadline: {
+        Args: {
+          priority: Database["public"]["Enums"]["ticket_priority"]
+        }
+        Returns: unknown
+      }
       halfvec_avg: {
         Args: {
           "": number[]

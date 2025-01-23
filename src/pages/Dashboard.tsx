@@ -13,9 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Plus, Settings } from "lucide-react";
+import { Loader2, LogOut, Plus, Settings } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 
 type Ticket = Database["public"]["Tables"]["tickets"]["Row"] & {
   assigned_worker?: {
@@ -70,6 +70,20 @@ export default function Dashboard() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      navigate('/auth');
+    } catch (error: any) {
+      toast({
+        title: "Error signing out",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleAssignTicket = async (ticketId: string) => {
     try {
       const { error } = await supabase
@@ -121,6 +135,23 @@ export default function Dashboard() {
     }
   };
 
+  const getSLAStatus = (deadline: string | null) => {
+    if (!deadline) return null;
+    
+    const now = new Date();
+    const deadlineDate = new Date(deadline);
+    const hoursRemaining = (deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+    
+    if (hoursRemaining < 0) {
+      return <span className="text-red-600 font-semibold">Overdue</span>;
+    } else if (hoursRemaining < 4) {
+      return <span className="text-orange-600 font-semibold">Critical</span>;
+    } else if (hoursRemaining < 8) {
+      return <span className="text-yellow-600">Approaching</span>;
+    }
+    return <span className="text-green-600">On Track</span>;
+  };
+
   if (authLoading || loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -128,19 +159,6 @@ export default function Dashboard() {
       </div>
     );
   }
-
-  const getPriorityClass = (priority: Database["public"]["Enums"]["ticket_priority"]) => {
-    switch (priority) {
-      case 'urgent':
-        return 'text-red-600 font-semibold';
-      case 'high':
-        return 'text-orange-600';
-      case 'medium':
-        return 'text-yellow-600';
-      default:
-        return 'text-green-600';
-    }
-  };
 
   return (
     <div className="min-h-screen p-8">
@@ -165,6 +183,10 @@ export default function Dashboard() {
                 Admin Panel
               </Button>
             )}
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
           </div>
         </div>
 
@@ -181,6 +203,8 @@ export default function Dashboard() {
                   <TableHead>Assigned To</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Priority</TableHead>
+                  <TableHead>SLA Status</TableHead>
+                  <TableHead>Deadline</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead>Last Updated</TableHead>
                   {hasWorkerAccess && <TableHead>Actions</TableHead>}
@@ -195,6 +219,14 @@ export default function Dashboard() {
                     <TableCell className="capitalize">{ticket.status.replace(/_/g, ' ')}</TableCell>
                     <TableCell className={getPriorityClass(ticket.priority)}>
                       {ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}
+                    </TableCell>
+                    <TableCell>{getSLAStatus(ticket.sla_deadline)}</TableCell>
+                    <TableCell>
+                      {ticket.sla_deadline ? (
+                        <span title={format(new Date(ticket.sla_deadline), 'PPpp')}>
+                          {formatDistanceToNow(new Date(ticket.sla_deadline), { addSuffix: true })}
+                        </span>
+                      ) : 'Not set'}
                     </TableCell>
                     <TableCell>{format(new Date(ticket.created_at), 'MMM d, yyyy')}</TableCell>
                     <TableCell>{format(new Date(ticket.updated_at), 'MMM d, yyyy')}</TableCell>
