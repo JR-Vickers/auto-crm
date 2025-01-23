@@ -135,6 +135,19 @@ export default function Dashboard() {
     }
   };
 
+  const getPriorityClass = (priority: Database["public"]["Enums"]["ticket_priority"]) => {
+    switch (priority) {
+      case 'urgent':
+        return 'text-red-600 font-semibold';
+      case 'high':
+        return 'text-orange-600';
+      case 'medium':
+        return 'text-yellow-600';
+      default:
+        return 'text-green-600';
+    }
+  };
+
   const getSLAStatus = (deadline: string | null) => {
     if (!deadline) return null;
     
