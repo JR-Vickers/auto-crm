@@ -16,6 +16,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomFieldManager } from "@/components/dashboard/CustomFieldManager";
+import { TagManager } from '@/components/dashboard/TagManager';
 
 type Profile = {
   id: string;
@@ -109,45 +110,50 @@ const Admin = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Link to="/admin/custom-fields">
-          <Card className="p-6 hover:bg-accent/50 transition-colors">
-            <h2 className="text-xl font-semibold mb-2">Custom Fields</h2>
-            <p className="text-muted-foreground">
-              Manage custom fields for tickets
-            </p>
-          </Card>
-        </Link>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
+          <TabsTrigger value="tags">Tags</TabsTrigger>
+          <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
 
-        <Link to="/admin/tags">
-          <Card className="p-6 hover:bg-accent/50 transition-colors">
-            <h2 className="text-xl font-semibold mb-2">Tags</h2>
-            <p className="text-muted-foreground">
-              Manage ticket tags and categories
-            </p>
+        <TabsContent value="custom-fields">
+          <Card>
+            <CardContent className="p-6">
+              <CustomFieldManager />
+            </CardContent>
           </Card>
-        </Link>
+        </TabsContent>
 
-        <Link to="/admin/users">
-          <Card className="p-6 hover:bg-accent/50 transition-colors">
-            <h2 className="text-xl font-semibold mb-2">Users</h2>
-            <p className="text-muted-foreground">
-              Manage user accounts and permissions
-            </p>
+        <TabsContent value="tags">
+          <Card>
+            <CardContent className="p-6">
+              <TagManager />
+            </CardContent>
           </Card>
-        </Link>
+        </TabsContent>
 
-        <Link to="/admin/settings">
-          <Card className="p-6 hover:bg-accent/50 transition-colors">
-            <h2 className="text-xl font-semibold mb-2">Settings</h2>
-            <p className="text-muted-foreground">
-              Configure system settings
-            </p>
+        <TabsContent value="users">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold mb-4">User Management</h3>
+              <p>User management features coming soon...</p>
+            </CardContent>
           </Card>
-        </Link>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="settings">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold mb-4">System Settings</h3>
+              <p>System settings features coming soon...</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
 
-export default Admin;
+export default Admin; 

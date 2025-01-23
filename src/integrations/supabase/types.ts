@@ -266,6 +266,7 @@ export type Database = {
           tags: string[] | null
           title: string
           updated_at: string
+          custom_fields: Json
         }
         Insert: {
           assigned_to?: string | null
@@ -281,6 +282,7 @@ export type Database = {
           tags?: string[] | null
           title: string
           updated_at?: string
+          custom_fields?: Json
         }
         Update: {
           assigned_to?: string | null
@@ -296,6 +298,7 @@ export type Database = {
           tags?: string[] | null
           title?: string
           updated_at?: string
+          custom_fields?: Json
         }
         Relationships: [
           {
@@ -364,6 +367,66 @@ export type Database = {
             referencedColumns: ["id"]
           }
         ]
+      }
+      custom_field_definitions: {
+        Row: {
+          id: string
+          name: string
+          field_type: 'text' | 'number' | 'date' | 'boolean' | 'select'
+          options: Json | null
+          required: boolean
+          description: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          field_type: 'text' | 'number' | 'date' | 'boolean' | 'select'
+          options?: Json | null
+          required?: boolean
+          description?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          field_type?: 'text' | 'number' | 'date' | 'boolean' | 'select'
+          options?: Json | null
+          required?: boolean
+          description?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tags: {
+        Row: {
+          id: string
+          name: string
+          color: string
+          description: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          color: string
+          description?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          color?: string
+          description?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {

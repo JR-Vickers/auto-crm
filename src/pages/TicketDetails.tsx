@@ -76,7 +76,17 @@ export default function TicketDetails() {
         },
         (payload) => {
           if (payload.eventType === 'UPDATE') {
-            setTicket((prev) => prev ? { ...prev, ...payload.new } : null);
+            console.log('Received ticket update:', payload.new);
+            setTicket(prev => {
+              if (!prev) return null;
+              return {
+                ...prev,
+                ...payload.new,
+                // Preserve the nested objects that aren't included in the payload
+                assigned_worker: prev.assigned_worker,
+                customer: prev.customer,
+              };
+            });
           }
         }
       )
@@ -421,6 +431,31 @@ export default function TicketDetails() {
     });
   };
 
+  const handleUpdateCustomFields = async (fields: Record<string, any>) => {
+    try {
+      const { error } = await supabase
+        .from('tickets')
+        .update({ custom_fields: fields })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Update local state immediately
+      setTicket(prev => prev ? { ...prev, custom_fields: fields } : null);
+
+      toast({
+        title: "Success",
+        description: "Custom fields updated successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -445,6 +480,7 @@ export default function TicketDetails() {
         templates={templates}
         onSaveTemplate={handleSaveTemplate}
         onDeleteTemplate={deleteTemplate}
+        onUpdateCustomFields={handleUpdateCustomFields}
       />
     </div>
   );
