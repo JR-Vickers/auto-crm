@@ -7,6 +7,7 @@ import { RichTextEditor } from "@/components/editor/RichTextEditor";
 import { SLAStatus, getPriorityClass } from "./SLAStatus";
 import { QuickResponseTemplates } from "./QuickResponseTemplates";
 import { FileAttachments } from "./FileAttachments";
+import { EyeIcon, EyeOffIcon, LockIcon } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Ticket = Database["public"]["Tables"]["tickets"]["Row"] & {
@@ -79,6 +80,11 @@ export function TicketDetail({
 }: TicketDetailProps) {
   const [newComment, setNewComment] = useState("");
   const [isInternalComment, setIsInternalComment] = useState(false);
+  const [showInternalNotes, setShowInternalNotes] = useState(true);
+
+  const filteredComments = showInternalNotes 
+    ? comments 
+    : comments.filter(comment => !comment.is_internal);
 
   return (
     <div className="space-y-6">
@@ -170,15 +176,48 @@ export function TicketDetail({
 
       {/* Comments */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Comments</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-semibold">Comments</h2>
+          {hasWorkerAccess && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowInternalNotes(!showInternalNotes)}
+              className="gap-2"
+            >
+              {showInternalNotes ? (
+                <>
+                  <EyeOffIcon className="h-4 w-4" />
+                  Hide Internal Notes
+                </>
+              ) : (
+                <>
+                  <EyeIcon className="h-4 w-4" />
+                  Show Internal Notes
+                </>
+              )}
+            </Button>
+          )}
+        </div>
         
         {/* Comment List */}
         <div className="space-y-4">
-          {comments.map((comment) => (
-            <Card key={comment.id} className={comment.is_internal ? 'border-yellow-200 bg-yellow-50' : ''}>
+          {filteredComments.map((comment) => (
+            <Card 
+              key={comment.id} 
+              className={comment.is_internal ? 'border-yellow-200 bg-yellow-50/50 dark:bg-yellow-950/20 dark:border-yellow-900' : ''}
+            >
               <CardHeader className="p-4">
                 <div className="flex justify-between items-center">
-                  <div className="font-medium">{comment.user.full_name}</div>
+                  <div className="flex items-center gap-2">
+                    <div className="font-medium">{comment.user.full_name}</div>
+                    {comment.is_internal && (
+                      <Badge variant="outline" className="bg-yellow-100 dark:bg-yellow-950 gap-1 text-xs">
+                        <LockIcon className="h-3 w-3" />
+                        Internal Note
+                      </Badge>
+                    )}
+                  </div>
                   <div className="text-sm text-muted-foreground">
                     {format(new Date(comment.created_at), 'PPp')}
                   </div>
@@ -211,9 +250,16 @@ export function TicketDetail({
                       variant="ghost"
                       size="sm"
                       onClick={() => setIsInternalComment(!isInternalComment)}
-                      className={isInternalComment ? 'bg-yellow-100' : ''}
+                      className={`gap-2 ${isInternalComment ? 'bg-yellow-100 dark:bg-yellow-950' : ''}`}
                     >
-                      {isInternalComment ? 'Internal Note' : 'Public Comment'}
+                      {isInternalComment ? (
+                        <>
+                          <LockIcon className="h-4 w-4" />
+                          Internal Note
+                        </>
+                      ) : (
+                        'Public Comment'
+                      )}
                     </Button>
                   </>
                 )}
@@ -224,7 +270,7 @@ export function TicketDetail({
             <RichTextEditor
               content={newComment}
               onChange={setNewComment}
-              placeholder="Write a comment..."
+              placeholder={isInternalComment ? "Write an internal note..." : "Write a comment..."}
             />
             <div className="mt-4 flex justify-end">
               <Button 
@@ -234,7 +280,7 @@ export function TicketDetail({
                 }}
                 disabled={!newComment.trim()}
               >
-                Add Comment
+                {isInternalComment ? 'Add Internal Note' : 'Add Comment'}
               </Button>
             </div>
           </CardContent>

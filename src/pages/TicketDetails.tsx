@@ -283,6 +283,9 @@ export default function TicketDetails() {
 
       if (error) throw error;
 
+      // Fetch comments after adding one
+      await fetchComments();
+
       toast({
         title: "Success",
         description: "Comment added",
