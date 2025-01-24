@@ -10,6 +10,7 @@ import { FileAttachments } from "./FileAttachments";
 import { CustomerHistory } from "./CustomerHistory";
 import { EyeIcon, EyeOffIcon, LockIcon } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { useNavigate } from "react-router-dom";
 
 type Ticket = Database["public"]["Tables"]["tickets"]["Row"] & {
   assigned_worker: {
@@ -82,6 +83,7 @@ export function TicketDetail({
   const [newComment, setNewComment] = useState("");
   const [isInternalComment, setIsInternalComment] = useState(false);
   const [showInternalNotes, setShowInternalNotes] = useState(true);
+  const navigate = useNavigate();
 
   const filteredComments = showInternalNotes 
     ? comments 
@@ -113,6 +115,12 @@ export function TicketDetail({
               Close Ticket
             </Button>
           )}
+          <Button
+            variant="outline"
+            onClick={() => navigate('/')}
+          >
+            Return to Dashboard
+          </Button>
         </div>
       </div>
 
