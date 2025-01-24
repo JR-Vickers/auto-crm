@@ -16,6 +16,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomFieldManager } from "@/components/dashboard/CustomFieldManager";
+import { Settings, Tags, Database, BarChart2, Users } from "lucide-react";
 
 type Profile = {
   id: string;
@@ -109,42 +110,58 @@ const Admin = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Link to="/admin/custom-fields">
-          <Card className="p-6 hover:bg-accent/50 transition-colors">
-            <h2 className="text-xl font-semibold mb-2">Custom Fields</h2>
-            <p className="text-muted-foreground">
-              Manage custom fields for tickets
-            </p>
-          </Card>
-        </Link>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card 
+          className="p-6 hover:bg-muted/50 transition-colors cursor-pointer"
+          onClick={() => navigate('/admin/custom-fields')}
+        >
+          <div className="flex items-center gap-4">
+            <Database className="h-8 w-8 text-primary" />
+            <div>
+              <h2 className="text-xl font-semibold">Custom Fields</h2>
+              <p className="text-muted-foreground">Manage custom fields for tickets</p>
+            </div>
+          </div>
+        </Card>
 
-        <Link to="/admin/tags">
-          <Card className="p-6 hover:bg-accent/50 transition-colors">
-            <h2 className="text-xl font-semibold mb-2">Tags</h2>
-            <p className="text-muted-foreground">
-              Manage ticket tags and categories
-            </p>
-          </Card>
-        </Link>
+        <Card 
+          className="p-6 hover:bg-muted/50 transition-colors cursor-pointer"
+          onClick={() => navigate('/admin/tags')}
+        >
+          <div className="flex items-center gap-4">
+            <Tags className="h-8 w-8 text-primary" />
+            <div>
+              <h2 className="text-xl font-semibold">Tags</h2>
+              <p className="text-muted-foreground">Manage ticket tags and categories</p>
+            </div>
+          </div>
+        </Card>
 
-        <Link to="/admin/users">
-          <Card className="p-6 hover:bg-accent/50 transition-colors">
-            <h2 className="text-xl font-semibold mb-2">Users</h2>
-            <p className="text-muted-foreground">
-              Manage user accounts and permissions
-            </p>
-          </Card>
-        </Link>
+        <Card 
+          className="p-6 hover:bg-muted/50 transition-colors cursor-pointer"
+          onClick={() => navigate('/admin/analytics')}
+        >
+          <div className="flex items-center gap-4">
+            <BarChart2 className="h-8 w-8 text-primary" />
+            <div>
+              <h2 className="text-xl font-semibold">Analytics</h2>
+              <p className="text-muted-foreground">View ticket and performance metrics</p>
+            </div>
+          </div>
+        </Card>
 
-        <Link to="/admin/settings">
-          <Card className="p-6 hover:bg-accent/50 transition-colors">
-            <h2 className="text-xl font-semibold mb-2">Settings</h2>
-            <p className="text-muted-foreground">
-              Configure system settings
-            </p>
-          </Card>
-        </Link>
+        <Card 
+          className="p-6 hover:bg-muted/50 transition-colors cursor-pointer"
+          onClick={() => navigate('/admin/users')}
+        >
+          <div className="flex items-center gap-4">
+            <Users className="h-8 w-8 text-primary" />
+            <div>
+              <h2 className="text-xl font-semibold">Users</h2>
+              <p className="text-muted-foreground">Manage user accounts and permissions</p>
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );

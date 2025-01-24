@@ -7,6 +7,8 @@ import TicketDetails from "@/pages/TicketDetails";
 import Admin from "@/pages/Admin";
 import AdminTags from "@/pages/admin/Tags";
 import { Toaster } from "@/components/ui/toaster";
+import AdminCustomFieldsPage from "@/pages/admin/CustomFields";
+import AnalyticsDashboard from "@/pages/admin/Analytics";
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
         <Route path="/tickets/:id" element={<TicketDetails />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/admin/tags" element={<AdminTags />} />
+        <Route path="/admin/custom-fields" element={<AdminCustomFieldsPage />} />
+        <Route path="/admin/analytics" element={<AnalyticsDashboard />} />
       </Routes>
       <Toaster />
     </Router>

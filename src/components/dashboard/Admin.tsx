@@ -17,6 +17,7 @@ import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomFieldManager } from "@/components/dashboard/CustomFieldManager";
 import { TagManager } from '@/components/dashboard/TagManager';
+import AnalyticsDashboard from '@/pages/admin/Analytics';
 
 type Profile = {
   id: string;
@@ -115,7 +116,7 @@ const Admin = () => {
           <TabsTrigger value="custom-fields">Custom Fields</TabsTrigger>
           <TabsTrigger value="tags">Tags</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="custom-fields">
@@ -143,11 +144,10 @@ const Admin = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="settings">
+        <TabsContent value="analytics">
           <Card>
             <CardContent className="p-6">
-              <h3 className="text-lg font-semibold mb-4">System Settings</h3>
-              <p>System settings features coming soon...</p>
+              <AnalyticsDashboard />
             </CardContent>
           </Card>
         </TabsContent>

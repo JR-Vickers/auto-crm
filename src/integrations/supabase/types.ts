@@ -253,20 +253,21 @@ export type Database = {
       }
       tickets: {
         Row: {
-          assigned_to: string | null
-          category: string | null
-          created_at: string
-          customer_id: string
-          description: string
           id: string
-          metadata: Json | null
-          priority: Database["public"]["Enums"]["ticket_priority"]
-          sla_deadline: string | null
-          status: Database["public"]["Enums"]["ticket_status"]
-          tags: string[] | null
           title: string
+          description: string
+          status: Database["public"]["Enums"]["ticket_status"]
+          priority: Database["public"]["Enums"]["ticket_priority"]
+          customer_id: string
+          assigned_to: string | null
+          created_at: string
           updated_at: string
-          custom_fields: Json
+          closed_at: string | null
+          category: string | null
+          metadata: Json
+          sla_deadline: string | null
+          conversation_history: Json | null
+          internal_notes: Json | null
         }
         Insert: {
           assigned_to?: string | null
