@@ -65,8 +65,8 @@ export function FileAttachments({
           <CardTitle className="text-sm font-medium text-muted-foreground">
             Attachments
           </CardTitle>
-          {hasWorkerAccess && (
-            <div className="flex gap-2">
+          <div className="flex gap-2">
+            {hasWorkerAccess && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -80,22 +80,22 @@ export function FileAttachments({
                 )}
                 {isInternalUpload ? "Internal" : "Public"}
               </Button>
-              <label>
-                <input
-                  type="file"
-                  multiple
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-                <Button variant="outline" size="sm" asChild>
-                  <span>
-                    <PaperclipIcon className="h-4 w-4 mr-2" />
-                    Attach Files
-                  </span>
-                </Button>
-              </label>
-            </div>
-          )}
+            )}
+            <label>
+              <input
+                type="file"
+                multiple
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              <Button variant="outline" size="sm" asChild>
+                <span>
+                  <PaperclipIcon className="h-4 w-4 mr-2" />
+                  Attach Files
+                </span>
+              </Button>
+            </label>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="p-4 pt-0">

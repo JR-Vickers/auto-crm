@@ -182,14 +182,16 @@ export function TicketDetail({
         />
       )}
 
-      {/* File Attachments */}
-      <FileAttachments
-        attachments={attachments}
-        hasWorkerAccess={hasWorkerAccess}
-        onUpload={onUploadAttachment}
-        onDelete={onDeleteAttachment}
-        onDownload={onDownloadAttachment}
-      />
+      {/* File Attachments - only show for workers */}
+      {hasWorkerAccess && (
+        <FileAttachments
+          attachments={attachments}
+          hasWorkerAccess={hasWorkerAccess}
+          onUpload={onUploadAttachment}
+          onDelete={onDeleteAttachment}
+          onDownload={onDownloadAttachment}
+        />
+      )}
 
       {/* Comments */}
       <div className="space-y-4">

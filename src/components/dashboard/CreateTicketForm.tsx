@@ -5,7 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { RichTextEditor } from '@/components/editor/RichTextEditor';
 import { CustomFields } from '@/components/dashboard/CustomFields';
 import { useCustomFields } from '@/hooks/useCustomFields';
@@ -27,9 +26,6 @@ export function CreateTicketForm() {
     title: '',
     description: '',
     priority: 'medium' as Priority,
-    category: '',
-    customer_id: '',
-    assigned_to: '',
     custom_fields: {} as Record<string, any>,
     tags: [] as string[],
   });
@@ -67,15 +63,18 @@ export function CreateTicketForm() {
         throw new Error(`Required fields missing: ${missingFields.join(', ')}`);
       }
 
+      // Get the current user's ID to use as customer_id
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error('No authenticated user');
+
       const { data: ticket, error } = await supabase
         .from('tickets')
         .insert({
           title: formData.title,
           description: formData.description,
           priority: formData.priority,
-          category: formData.category || null,
-          customer_id: formData.customer_id || null,
-          assigned_to: formData.assigned_to || null,
+          customer_id: user.id, // Use the current user's ID
           custom_fields: formData.custom_fields,
           tags: formData.tags,
         })
@@ -156,36 +155,6 @@ export function CreateTicketForm() {
           />
         </div>
       )}
-
-      <div className="space-y-2">
-        <Label htmlFor="category">Category</Label>
-        <Input
-          id="category"
-          value={formData.category}
-          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-          placeholder="Enter ticket category"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="customer_id">Customer ID</Label>
-        <Input
-          id="customer_id"
-          value={formData.customer_id}
-          onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
-          placeholder="Enter customer ID"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="assigned_to">Assign To</Label>
-        <Input
-          id="assigned_to"
-          value={formData.assigned_to}
-          onChange={(e) => setFormData({ ...formData, assigned_to: e.target.value })}
-          placeholder="Enter assignee ID"
-        />
-      </div>
 
       <Button type="submit" disabled={isSubmitting} className="w-full">
         {isSubmitting ? 'Creating...' : 'Create Ticket'}
