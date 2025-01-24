@@ -464,11 +464,91 @@ export type Database = {
           }
         ]
       }
+      archived_tickets: {
+        Row: {
+          id: string
+          title: string
+          description: string
+          status: Database["public"]["Enums"]["ticket_status"]
+          priority: Database["public"]["Enums"]["ticket_priority"]
+          customer_id: string
+          assigned_to: string | null
+          created_at: string
+          updated_at: string
+          closed_at: string | null
+          category: string | null
+          metadata: Json
+          sla_deadline: string | null
+          conversation_history: Json | null
+          internal_notes: Json | null
+          archived_at: string
+          archived_by: string | null
+        }
+        Insert: {
+          id?: string
+          title: string
+          description: string
+          status?: Database["public"]["Enums"]["ticket_status"]
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          customer_id: string
+          assigned_to?: string | null
+          created_at?: string
+          updated_at?: string
+          closed_at?: string | null
+          category?: string | null
+          metadata?: Json
+          sla_deadline?: string | null
+          conversation_history?: Json | null
+          internal_notes?: Json | null
+          archived_at?: string
+          archived_by?: string | null
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string
+          status?: Database["public"]["Enums"]["ticket_status"]
+          priority?: Database["public"]["Enums"]["ticket_priority"]
+          customer_id?: string
+          assigned_to?: string | null
+          created_at?: string
+          updated_at?: string
+          closed_at?: string | null
+          category?: string | null
+          metadata?: Json
+          sla_deadline?: string | null
+          conversation_history?: Json | null
+          internal_notes?: Json | null
+          archived_at?: string
+          archived_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "archived_tickets_archived_by_fkey"
+            columns: ["archived_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      archive_old_tickets: {
+        Args: {
+          days_old: number
+        }
+        Returns: number
+      }
+      restore_archived_ticket: {
+        Args: {
+          ticket_id: string
+        }
+        Returns: string
+      }
       binary_quantize:
         | {
             Args: {

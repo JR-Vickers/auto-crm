@@ -16,7 +16,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomFieldManager } from "@/components/dashboard/CustomFieldManager";
-import { Settings, Tags, Database, BarChart2, Users } from "lucide-react";
+import { Settings, Tags, Database, BarChart2, Users, Archive } from "lucide-react";
 
 type Profile = {
   id: string;
@@ -101,6 +101,14 @@ const Admin = () => {
     );
   }
 
+  const adminNavItems = [
+    { href: '/admin/analytics', label: 'Analytics' },
+    { href: '/admin/settings', label: 'Settings' },
+    { href: '/admin/custom-fields', label: 'Custom Fields' },
+    { href: '/admin/tags', label: 'Tags' },
+    { href: '/admin/archives', label: 'Archives' },
+  ]
+
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-8">
@@ -172,6 +180,19 @@ const Admin = () => {
             <div>
               <h2 className="text-xl font-semibold">Settings</h2>
               <p className="text-muted-foreground">Configure system settings and preferences</p>
+            </div>
+          </div>
+        </Card>
+
+        <Card 
+          className="p-6 hover:bg-muted/50 transition-colors cursor-pointer"
+          onClick={() => navigate('/admin/archives')}
+        >
+          <div className="flex items-center gap-4">
+            <Archive className="h-8 w-8 text-primary" />
+            <div>
+              <h2 className="text-xl font-semibold">Archives</h2>
+              <p className="text-muted-foreground">Manage archived tickets</p>
             </div>
           </div>
         </Card>
