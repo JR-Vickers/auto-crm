@@ -1,6 +1,7 @@
 # Auto-CRM Project Plan
 
 ## Progress Overview
+*Note: only 3-5 of these are required.*
 
 Core Architecture: 100% (7/7 tasks)
 Admin Features: 100% (6/6 tasks)
