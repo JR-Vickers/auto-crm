@@ -20,6 +20,7 @@ interface TicketRowProps {
   isSelected: boolean;
   onAssign: (ticketId: string) => void;
   onUpdateStatus: (ticketId: string, status: Database["public"]["Enums"]["ticket_status"]) => void;
+  onArchive: (ticketId: string) => void;
   onRowClick: (ticketId: string) => void;
   onSelectionChange: (ticketId: string, isSelected: boolean) => void;
 }
@@ -29,7 +30,8 @@ export function TicketRow({
   hasWorkerAccess, 
   isSelected,
   onAssign, 
-  onUpdateStatus, 
+  onUpdateStatus,
+  onArchive,
   onRowClick,
   onSelectionChange
 }: TicketRowProps) {
@@ -70,7 +72,15 @@ export function TicketRow({
                 Assign to me
               </Button>
             )}
-            {ticket.status !== 'closed' && (
+            {ticket.status === 'closed' ? (
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => onArchive(ticket.id)}
+              >
+                Archive
+              </Button>
+            ) : (
               <Button 
                 size="sm" 
                 variant="outline"

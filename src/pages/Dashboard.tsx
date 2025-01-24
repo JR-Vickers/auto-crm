@@ -235,6 +235,27 @@ export default function Dashboard() {
     setSelectedTickets(isSelected ? tickets.map(t => t.id) : []);
   };
 
+  const handleArchive = async (ticketId: string) => {
+    try {
+      const { error } = await supabase.rpc('archive_ticket', { ticket_id: ticketId });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Ticket archived successfully",
+      });
+
+      fetchTickets();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -274,6 +295,7 @@ export default function Dashboard() {
               selectedTickets={selectedTickets}
               onAssignTicket={handleAssignTicket}
               onUpdateStatus={handleUpdateStatus}
+              onArchive={handleArchive}
               onRowClick={(id) => navigate(`/tickets/${id}`)}
               onSelectionChange={handleSelectionChange}
               onSelectAll={handleSelectAll}

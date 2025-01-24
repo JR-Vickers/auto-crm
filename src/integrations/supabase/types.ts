@@ -543,6 +543,12 @@ export type Database = {
         }
         Returns: number
       }
+      archive_ticket: {
+        Args: {
+          ticket_id: string
+        }
+        Returns: void
+      }
       restore_archived_ticket: {
         Args: {
           ticket_id: string

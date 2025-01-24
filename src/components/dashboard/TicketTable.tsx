@@ -24,6 +24,7 @@ interface TicketTableProps {
   selectedTickets: string[];
   onAssignTicket: (ticketId: string) => void;
   onUpdateStatus: (ticketId: string, status: Database["public"]["Enums"]["ticket_status"]) => void;
+  onArchive: (ticketId: string) => void;
   onRowClick: (ticketId: string) => void;
   onSelectionChange: (ticketId: string, isSelected: boolean) => void;
   onSelectAll: (isSelected: boolean) => void;
@@ -34,7 +35,8 @@ export function TicketTable({
   hasWorkerAccess, 
   selectedTickets,
   onAssignTicket, 
-  onUpdateStatus, 
+  onUpdateStatus,
+  onArchive,
   onRowClick,
   onSelectionChange,
   onSelectAll
@@ -75,6 +77,7 @@ export function TicketTable({
             isSelected={selectedTickets.includes(ticket.id)}
             onAssign={onAssignTicket}
             onUpdateStatus={onUpdateStatus}
+            onArchive={onArchive}
             onRowClick={onRowClick}
             onSelectionChange={onSelectionChange}
           />

@@ -11,6 +11,7 @@ import AdminCustomFieldsPage from "@/pages/admin/CustomFields";
 import AnalyticsDashboard from "@/pages/admin/Analytics";
 import Settings from "@/pages/admin/Settings";
 import Archives from './pages/admin/Archives';
+import Users from './pages/admin/Users';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/admin/analytics" element={<AnalyticsDashboard />} />
         <Route path="/admin/settings" element={<Settings />} />
         <Route path="/admin/archives" element={<Archives />} />
+        <Route path="/admin/users" element={<Users />} />
       </Routes>
       <Toaster />
     </Router>

@@ -233,13 +233,13 @@ export default function Settings() {
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">System Settings</h1>
-        <div className="space-x-4">
-          <Button variant="outline" asChild>
-            <Link to="/admin">Back to Admin Dashboard</Link>
-          </Button>
-          <Button onClick={saveSettings} disabled={saving}>
+        <div className="flex gap-2">
+          <Button variant="default" onClick={saveSettings} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
             Save Changes
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/admin">Back to Admin Dashboard</Link>
           </Button>
         </div>
       </div>
