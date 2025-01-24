@@ -162,6 +162,19 @@ const Admin = () => {
             </div>
           </div>
         </Card>
+
+        <Card 
+          className="p-6 hover:bg-muted/50 transition-colors cursor-pointer"
+          onClick={() => navigate('/admin/settings')}
+        >
+          <div className="flex items-center gap-4">
+            <Settings className="h-8 w-8 text-primary" />
+            <div>
+              <h2 className="text-xl font-semibold">Settings</h2>
+              <p className="text-muted-foreground">Configure system settings and preferences</p>
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );
