@@ -109,7 +109,7 @@ export function TicketDetail({
           )}
           {hasWorkerAccess && ticket.status !== 'closed' && (
             <Button 
-              variant="outline"
+              variant="destructive"
               onClick={() => onUpdateStatus(ticket.id, 'closed')}
             >
               Close Ticket
@@ -117,7 +117,7 @@ export function TicketDetail({
           )}
           <Button
             variant="outline"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/dashboard')}
           >
             Return to Dashboard
           </Button>

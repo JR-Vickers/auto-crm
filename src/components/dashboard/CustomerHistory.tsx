@@ -233,7 +233,7 @@ export function CustomerHistory({ customerId, currentTicketId }: CustomerHistory
         <Tabs defaultValue="profile">
           <TabsList className="mb-4">
             <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="tickets">Previous Tickets ({tickets.length})</TabsTrigger>
+            <TabsTrigger value="tickets">Other Tickets ({tickets.length})</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
             <TabsTrigger value="related">Related Tickets ({relatedTickets.length})</TabsTrigger>
           </TabsList>
